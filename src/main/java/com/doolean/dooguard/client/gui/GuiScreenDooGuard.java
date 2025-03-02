@@ -27,9 +27,11 @@ public class GuiScreenDooGuard extends GuiScreen {
     GuiTextField zInput = null;
     GuiTextField firstField = null;
 
+    String value = "";
+
     private final List<GuiTextField> flagValueSetList = new ArrayList<>();
 
-    private String selectedTab = "";
+    private String selectedTab;
     private Flag selectedFlag = new Flag();
 
     private String errorMessage = "";
@@ -84,9 +86,6 @@ public class GuiScreenDooGuard extends GuiScreen {
     public void initGui() {
         Keyboard.enableRepeatEvents(true);
         this.buttonList.clear();
-
-        int centerX = this.width / 2;
-        int centerY = this.height / 2;
 
         // Кнопки для вкладок
         for (int i = 0; i < tabs.size(); i++) {
@@ -155,8 +154,8 @@ public class GuiScreenDooGuard extends GuiScreen {
                 }
                 case "boolean":
                 {
-                    this.buttonList.add(new GuiButton(500, VALUE_INPUT_STARTX, VALUE_INPUT_STARTY, VALUE_BUTTON_WIDTH, BUTTON_HEIGHT, "TRUE"));
-                    this.buttonList.add(new GuiButton(501, VALUE_INPUT_STARTX + VALUE_BUTTON_WIDTH + PADDING, VALUE_INPUT_STARTY, 100, BUTTON_HEIGHT, "FALSE"));
+                    this.buttonList.add(new GuiButton(500, VALUE_INPUT_STARTX, VALUE_INPUT_STARTY, VALUE_BUTTON_WIDTH, BUTTON_HEIGHT, "FALSE"));
+                    this.buttonList.add(new GuiButton(501, VALUE_INPUT_STARTX + VALUE_BUTTON_WIDTH + PADDING, VALUE_INPUT_STARTY, 100, BUTTON_HEIGHT, "TRUE"));
                     break;
                 }
                 case "set":
@@ -203,13 +202,73 @@ public class GuiScreenDooGuard extends GuiScreen {
             updateValueInput();
         } else if (button.id == 300) { // "Generate"
             generateCommand();
+        } else if (button.id == 500 || button.id == 501) {
+            if (!selectedFlag.getName().isEmpty()) {
+                if (Objects.equals(selectedFlag.getType(), "state")) {
+                    if (button.id == 500) {
+                        value = "deny";
+                    }
+                    if (button.id == 501) {
+                        value = "allow";
+                    }
+                } else if (Objects.equals(selectedFlag.getType(), "boolean")) {
+                    if (button.id == 500) {
+                        value = "false";
+                    }
+                    if (button.id == 501) {
+                        value = "true";
+                    }
+                }
+            }
         }
     }
 
     private void generateCommand() {
         if (regionNameInput.getText().isEmpty() || selectedFlag.getName().isEmpty()) return;
 
-        String value = "";
+        String xValue, yValue, zValue;
+        String flagType = selectedFlag.getType();
+
+        switch (flagType) {
+            case "string": {
+                value = flagValueInput.getText();
+                break;
+            }
+            case "integer": {
+                value = flagValueInput.getText();
+                if (!value.matches("\\d+")) { // Проверка: только цифры 0-9
+                    errorMessage = "Specified integer value is invalid";
+                    return;
+                }
+                break;
+            }
+            case "double": {
+                value = flagValueInput.getText();
+                if (!value.matches("\\d+(\\.\\d+)?")) { // Проверка: цифры + одна точка
+                    errorMessage = "Specified double value is invalid";
+                    return;
+                }
+                break;
+            }
+            case "location":{
+                xValue = xInput.getText();
+                yValue = yInput.getText();
+                zValue = zInput.getText();
+                if (!xValue.matches("-?\\d+(\\.\\d+)?") || !yValue.matches("-?\\d+(\\.\\d+)?") || !zValue.matches("-?\\d+(\\.\\d+)?")) {
+                    errorMessage = "Specified location value is invalid";
+                    return;
+                }
+                break;
+            }
+            case "set":{
+                break;
+            }
+            default:{
+                errorMessage = "Flag type is invalid";
+                return;
+            }
+        }
+
         String command = "/region flag " + regionNameInput.getText() + " " + selectedFlag.getName() + " " + value;
 
         commandOutputField.setText(command);
