@@ -10,9 +10,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
-// TODO: сделать дефолт значения для инта и дабл
-// TODO: увеличить ширину поля для команды на весь экран
-
 public class GuiScreenDooGuard extends GuiScreen {
     public static final int VALUE_BUTTON_WIDTH = 100;
     public static final int BUTTON_HEIGHT = 20;
@@ -46,7 +43,6 @@ public class GuiScreenDooGuard extends GuiScreen {
     private static final int FLAG_BUTTON_HEIGHT = BUTTON_HEIGHT;
     private static final int PADDING = 10;
 
-
     private final int REGION_NAME_STARTX = 10;
     private static final int REGION_NAME_STARTY = 60;
     private static final int REGION_NAME_WIDTH = 150;
@@ -59,7 +55,7 @@ public class GuiScreenDooGuard extends GuiScreen {
     private final int COMMAND_OUTPUT_STARTX = 10;
     private static final int COMMAND_OUTPUT_STARTY_BOTTOM = 40;
 
-    private static final int GENERATE_WIDTH = 100;
+    private static final int COPY_WIDTH = 100;
     private final int GENERATE_STARTX = COMMAND_OUTPUT_STARTX + COMMAND_OUTPUT_WIDTH + PADDING;
 
 
@@ -107,13 +103,12 @@ public class GuiScreenDooGuard extends GuiScreen {
         updateValueInput();
 
         // Поле вывода команды
-        commandOutputField = new GuiTextField(2, this.fontRenderer, COMMAND_OUTPUT_STARTX, this.height - COMMAND_OUTPUT_STARTY_BOTTOM, COMMAND_OUTPUT_WIDTH, BUTTON_HEIGHT);
+        commandOutputField = new GuiTextField(2, this.fontRenderer, PADDING, this.height - COMMAND_OUTPUT_STARTY_BOTTOM, this.width - PADDING * 3 - COPY_WIDTH, BUTTON_HEIGHT);
         commandOutputField.setMaxStringLength(100);
         commandOutputField.setEnabled(false);
 
-
-        // Кнопка "Generate"
-        this.buttonList.add(new GuiButton(300, GENERATE_STARTX, this.height - COMMAND_OUTPUT_STARTY_BOTTOM, GENERATE_WIDTH, BUTTON_HEIGHT, "Generate"));
+        // Кнопка "Copy"
+        this.buttonList.add(new GuiButton(300, PADDING + (this.width - PADDING * 3 - COPY_WIDTH) + PADDING, this.height - COMMAND_OUTPUT_STARTY_BOTTOM, COPY_WIDTH, BUTTON_HEIGHT, "Copy"));
     }
 
     private void updateValueInput() {
