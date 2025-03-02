@@ -10,14 +10,18 @@ import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
-// TODO: реализовать функционал получения значений флагов
-// TODO: не работают поля ввода значений флагов
-// TODO: проверить, что поля ввода значений локации не перекрывают друг друга
+// TODO: сделать дефолт значения для инта и дабл
+// TODO: увеличить ширину поля для команды на весь экран
 
 public class GuiScreenDooGuard extends GuiScreen {
     public static final int VALUE_BUTTON_WIDTH = 100;
     public static final int BUTTON_HEIGHT = 20;
     public static final int LOCATION_INPUT_WIDTH = 50;
+    public static final int MAX_STRING_LENGTH = 200;
+    public static final int MAX_NUMBER_LENGTH = 50;
+    public static final int MAX_POSITION_LENGTH = 10;
+    public static final int MAX_SET_SIZE = 24;
+    public static final int SET_VALUES_PER_ROW = 8;
     private GuiTextField regionNameInput;
     private GuiTextField commandOutputField;
 
@@ -28,6 +32,7 @@ public class GuiScreenDooGuard extends GuiScreen {
     GuiTextField firstField = null;
 
     String value = "";
+    String xValue, yValue, zValue;
 
     private final List<GuiTextField> flagValueSetList = new ArrayList<>();
 
@@ -49,7 +54,7 @@ public class GuiScreenDooGuard extends GuiScreen {
     private final int DESCRIPTION_STARTX = 10;
     private static final int DESCRIPTION_STARTY_BOTTOM = 200;
     private final int ERROR_STARTX = 10;
-    private static final int ERROR_STARTY_BOTTOM = 60;
+    private static final int ERROR_STARTY_BOTTOM = 80;
     private final int COMMAND_OUTPUT_WIDTH = 200;
     private final int COMMAND_OUTPUT_STARTX = 10;
     private static final int COMMAND_OUTPUT_STARTY_BOTTOM = 40;
@@ -112,7 +117,7 @@ public class GuiScreenDooGuard extends GuiScreen {
     }
 
     private void updateValueInput() {
-        this.buttonList.removeIf(button -> button.id >= 500 && button.id < 600);
+        this.buttonList.removeIf(button -> button.id >= 500 && button.id < 702);
         flagValueInput = null;
         xInput = null;
         yInput = null;
@@ -132,14 +137,14 @@ public class GuiScreenDooGuard extends GuiScreen {
                 case "string":
                 {
                     flagValueInput = new GuiTextField(1, this.fontRenderer, VALUE_INPUT_STARTX, VALUE_INPUT_STARTY, 200, BUTTON_HEIGHT);
-                    flagValueInput.setMaxStringLength(200);
+                    flagValueInput.setMaxStringLength(MAX_STRING_LENGTH);
                     break;
                 }
                 case "integer":
                 case "double":
                 {
                     flagValueInput = new GuiTextField(1, this.fontRenderer, VALUE_INPUT_STARTX, VALUE_INPUT_STARTY, 50, BUTTON_HEIGHT);
-                    flagValueInput.setMaxStringLength(50);
+                    flagValueInput.setMaxStringLength(MAX_NUMBER_LENGTH);
                     break;
                 }
                 case "location":
@@ -147,9 +152,9 @@ public class GuiScreenDooGuard extends GuiScreen {
                     xInput = new GuiTextField(1, this.fontRenderer, VALUE_INPUT_STARTX, VALUE_INPUT_STARTY, LOCATION_INPUT_WIDTH, BUTTON_HEIGHT);
                     yInput = new GuiTextField(2, this.fontRenderer, VALUE_INPUT_STARTX + LOCATION_INPUT_WIDTH + PADDING, VALUE_INPUT_STARTY, LOCATION_INPUT_WIDTH, BUTTON_HEIGHT);
                     zInput = new GuiTextField(3, this.fontRenderer, VALUE_INPUT_STARTX + LOCATION_INPUT_WIDTH * 2 + PADDING * 2, VALUE_INPUT_STARTY, LOCATION_INPUT_WIDTH, BUTTON_HEIGHT);
-                    xInput.setMaxStringLength(10);
-                    yInput.setMaxStringLength(10);
-                    zInput.setMaxStringLength(10);
+                    xInput.setMaxStringLength(MAX_POSITION_LENGTH);
+                    yInput.setMaxStringLength(MAX_POSITION_LENGTH);
+                    zInput.setMaxStringLength(MAX_POSITION_LENGTH);
                     break;
                 }
                 case "boolean":
@@ -158,14 +163,30 @@ public class GuiScreenDooGuard extends GuiScreen {
                     this.buttonList.add(new GuiButton(501, VALUE_INPUT_STARTX + VALUE_BUTTON_WIDTH + PADDING, VALUE_INPUT_STARTY, 100, BUTTON_HEIGHT, "TRUE"));
                     break;
                 }
-                case "set":
+                case "set of strings":
                 {
                     firstField = new GuiTextField(0, this.fontRenderer, VALUE_INPUT_STARTX, VALUE_INPUT_STARTY, 100, BUTTON_HEIGHT);
                     firstField.setMaxStringLength(50);
                     this.flagValueSetList.add(firstField);
-                    this.buttonList.add(new GuiButton(500, VALUE_INPUT_STARTX, VALUE_INPUT_STARTY + 30, 100, BUTTON_HEIGHT, "Add more..."));
+
+                    // Кнопка "Добавить"
+                    this.buttonList.add(new GuiButton(700, VALUE_INPUT_STARTX, VALUE_INPUT_STARTY - 30, 100, BUTTON_HEIGHT, "Add"));
+
+                    // Кнопка "Удалить"
+                    this.buttonList.add(new GuiButton(701, VALUE_INPUT_STARTX + 110, VALUE_INPUT_STARTY - 30, 100, BUTTON_HEIGHT, "Remove"));
+
                     break;
                 }
+                case "gamemode": {
+                    // Создаем кнопки для каждого режима
+                    this.buttonList.add(new GuiButton(502, VALUE_INPUT_STARTX, VALUE_INPUT_STARTY, VALUE_BUTTON_WIDTH, BUTTON_HEIGHT, "CREATIVE"));
+                    this.buttonList.add(new GuiButton(503, VALUE_INPUT_STARTX + VALUE_BUTTON_WIDTH + PADDING, VALUE_INPUT_STARTY, VALUE_BUTTON_WIDTH, BUTTON_HEIGHT, "SURVIVAL"));
+                    this.buttonList.add(new GuiButton(504, VALUE_INPUT_STARTX + VALUE_BUTTON_WIDTH * 2 + PADDING * 2, VALUE_INPUT_STARTY, VALUE_BUTTON_WIDTH, BUTTON_HEIGHT, "ADVENTURE"));
+                    this.buttonList.add(new GuiButton(505, VALUE_INPUT_STARTX + VALUE_BUTTON_WIDTH * 3 + PADDING * 3, VALUE_INPUT_STARTY, VALUE_BUTTON_WIDTH, BUTTON_HEIGHT, "SPECTATOR"));
+
+                    break;
+                }
+
                 default:{
                     errorMessage = "Flag is not specified. Flag type: " + type;
                     break;
@@ -176,6 +197,7 @@ public class GuiScreenDooGuard extends GuiScreen {
 
     private void updateFlagButtons() {
         this.buttonList.removeIf(button -> button.id >= 200 && button.id < 300);
+
 
         int startX = this.width / 2 - (FLAGS_PER_ROW * FLAG_BUTTON_WIDTH) / 2;
         int startY = 100;
@@ -191,42 +213,115 @@ public class GuiScreenDooGuard extends GuiScreen {
         }
     }
 
-    @Override
-    protected void actionPerformed(GuiButton button) throws IOException {
-        if (button.id >= 400 && button.id < 400 + tabs.size()) { // Переключение вкладки
-            selectedTab = tabs.get(button.id - 400);
-            updateFlagButtons();
-        } else if (button.id >= 200 && button.id < 300) { // Выбор флага
-            List<Flag> categoryFlags = FlagUtils.filterFlagsByCategory(flags, selectedTab);
-            selectedFlag = categoryFlags.get(button.id - 200);
-            updateValueInput();
-        } else if (button.id == 300) { // "Generate"
-            generateCommand();
-        } else if (button.id == 500 || button.id == 501) {
-            if (!selectedFlag.getName().isEmpty()) {
-                if (Objects.equals(selectedFlag.getType(), "state")) {
-                    if (button.id == 500) {
-                        value = "deny";
-                    }
-                    if (button.id == 501) {
-                        value = "allow";
-                    }
-                } else if (Objects.equals(selectedFlag.getType(), "boolean")) {
-                    if (button.id == 500) {
-                        value = "false";
-                    }
-                    if (button.id == 501) {
-                        value = "true";
-                    }
-                }
+    private void setDefaultValue(String selectedFlagType){
+        switch (selectedFlagType){
+            case "state":{
+                value = "deny";
+                break;
+            }
+            case "string":
+            case "set of strings": {
+                value = "";
+                break;
+            }
+            case "integer":
+            case "double":{
+                value = "0";
+                break;
+            }
+            case "location":{
+                xValue = yValue = zValue = "0";
+                break;
+            }
+            case "boolean":{
+                value = "false";
+                break;
             }
         }
     }
 
-    private void generateCommand() {
-        if (regionNameInput.getText().isEmpty() || selectedFlag.getName().isEmpty()) return;
+    @Override
+    protected void actionPerformed(GuiButton button) throws IOException {
+        switch (button.id) {
+            case 300: { // "Generate"
+                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(commandOutputField.getText()), null);
+                mc.player.sendMessage(new TextComponentString("Command copied to clipboard: " + commandOutputField.getText()));
+                break;
+            }
+            case 700: { // Add more
+                if (flagValueSetList.size() < MAX_SET_SIZE) {
+                    int rows = flagValueSetList.size() / SET_VALUES_PER_ROW;
+                    int cols = flagValueSetList.size() % SET_VALUES_PER_ROW;
 
-        String xValue, yValue, zValue;
+                    int startX = VALUE_INPUT_STARTX + (cols * 110);
+                    int startY = VALUE_INPUT_STARTY + (rows * 30);
+
+                    GuiTextField newField = new GuiTextField(flagValueSetList.size(), this.fontRenderer, startX, startY, 100, BUTTON_HEIGHT);
+                    newField.setMaxStringLength(50);
+                    flagValueSetList.add(newField);
+                }
+                break;
+            }
+            case 701: { // Remove field
+                if (flagValueSetList.size() > 1) {
+                    flagValueSetList.remove(flagValueSetList.size() - 1);
+                } else {
+                    flagValueSetList.get(0).setText(""); // Очищаем первое поле
+                }
+                break;
+            }
+            case 502: { // CREATIVE
+                value = "creative";
+                generateCommand(); // Перегенерируем команду
+                break;
+            }
+            case 503: { // SURVIVAL
+                value = "survival";
+                generateCommand();
+                break;
+            }
+            case 504: { // ADVENTURE
+                value = "adventure";
+                generateCommand();
+                break;
+            }
+            case 505: { // SPECTATOR
+                value = "spectator";
+                generateCommand();
+                break;
+            }
+            default:
+                if (button.id >= 400 && button.id < 400 + tabs.size()) { // Переключение вкладки
+                    selectedTab = tabs.get(button.id - 400);
+                    updateFlagButtons();
+                } else if (button.id >= 200 && button.id < 300) { // Выбор флага
+                    List<Flag> categoryFlags = FlagUtils.filterFlagsByCategory(flags, selectedTab);
+                    selectedFlag = categoryFlags.get(button.id - 200);
+                    updateValueInput();
+                    setDefaultValue(selectedFlag.getType());
+                    generateCommand();
+                } else if (button.id == 500 || button.id == 501) { // Обработка кнопок для "state" и "boolean"
+                    if (!selectedFlag.getName().isEmpty()) {
+                        if (Objects.equals(selectedFlag.getType(), "state")) {
+                            value = (button.id == 500) ? "deny" : "allow";
+                        } else if (Objects.equals(selectedFlag.getType(), "boolean")) {
+                            value = (button.id == 500) ? "false" : "true";
+                        }
+                        generateCommand();
+                    }
+                }
+                break;
+        }
+    }
+
+
+    private void generateCommand() {
+        if (selectedFlag.getName().isEmpty()) return;
+
+        String regionName = regionNameInput.getText().isEmpty() ? "spawn" : regionNameInput.getText();
+
+        errorMessage = "";
+
         String flagType = selectedFlag.getType();
 
         switch (flagType) {
@@ -258,34 +353,64 @@ public class GuiScreenDooGuard extends GuiScreen {
                     errorMessage = "Specified location value is invalid";
                     return;
                 }
+                value = xValue + " " + yValue + " " + zValue;
                 break;
             }
-            case "set":{
+            case "set of strings": {
+                StringBuilder valueBuilder = new StringBuilder();
+                for (GuiTextField field : flagValueSetList) {
+                    if (!field.getText().isEmpty()) {
+                        if (valueBuilder.length() > 0) {
+                            valueBuilder.append(" ");
+                        }
+                        valueBuilder.append(field.getText());
+                    }
+                }
+                value = valueBuilder.toString();
                 break;
             }
-            default:{
-                errorMessage = "Flag type is invalid";
-                return;
-            }
+
         }
 
-        String command = "/region flag " + regionNameInput.getText() + " " + selectedFlag.getName() + " " + value;
+        String command = "/region flag " + regionName + " " + selectedFlag.getName() + " " + value;
 
         commandOutputField.setText(command);
-        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(command), null);
-        mc.player.sendMessage(new TextComponentString("Command copied to clipboard: " + command));
     }
 
     @Override
     protected void keyTyped(char typedChar, int keyCode) throws IOException {
-        regionNameInput.textboxKeyTyped(typedChar, keyCode);
         super.keyTyped(typedChar, keyCode);
+
+        regionNameInput.textboxKeyTyped(typedChar, keyCode);
+        if (flagValueInput != null) flagValueInput.textboxKeyTyped(typedChar, keyCode);
+        if (xInput != null) xInput.textboxKeyTyped(typedChar, keyCode);
+        if (yInput != null) yInput.textboxKeyTyped(typedChar, keyCode);
+        if (zInput != null) zInput.textboxKeyTyped(typedChar, keyCode);
+        if (flagValueSetList.isEmpty()){ // to prevent double values
+            if (firstField != null) firstField.textboxKeyTyped(typedChar, keyCode);
+        }
+
+        for (GuiTextField field : flagValueSetList) {
+            field.textboxKeyTyped(typedChar, keyCode);
+        }
+
+        generateCommand();
     }
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
-        regionNameInput.mouseClicked(mouseX, mouseY, mouseButton);
         super.mouseClicked(mouseX, mouseY, mouseButton);
+
+        regionNameInput.mouseClicked(mouseX, mouseY, mouseButton);
+        if (flagValueInput != null) flagValueInput.mouseClicked(mouseX, mouseY, mouseButton);
+        if (xInput != null) xInput.mouseClicked(mouseX, mouseY, mouseButton);
+        if (yInput != null) yInput.mouseClicked(mouseX, mouseY, mouseButton);
+        if (zInput != null) zInput.mouseClicked(mouseX, mouseY, mouseButton);
+        if (firstField != null) firstField.mouseClicked(mouseX, mouseY, mouseButton);
+
+        for (GuiTextField field : flagValueSetList) {
+            field.mouseClicked(mouseX, mouseY, mouseButton);
+        }
     }
 
     @Override
@@ -322,8 +447,13 @@ public class GuiScreenDooGuard extends GuiScreen {
             firstField.setEnabled(true);
         }
 
+        for (GuiTextField field : flagValueSetList) {
+            field.drawTextBox();
+            field.setEnabled(true);
+        }
+
         if (!errorMessage.isEmpty()) {
-            this.drawString(this.fontRenderer, errorMessage, ERROR_STARTX, ERROR_STARTY_BOTTOM, 0xFF0000);
+            this.drawString(this.fontRenderer, errorMessage, ERROR_STARTX, this.height - ERROR_STARTY_BOTTOM, 0xFF0000);
         }
 
         commandOutputField.drawTextBox();
