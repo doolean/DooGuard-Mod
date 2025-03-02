@@ -1,14 +1,14 @@
 [
 {
-  "modid": "examplemod",
-  "name": "Example Mod",
-  "description": "Example placeholder mod.",
+  "modid": "dooguard",
+  "name": "DooGuard Mod",
+  "description": "This mod allows you to specify WorldGuard flag values for your regions. For more info visit GitHub page.",
   "version": "${version}",
   "mcversion": "${mcversion}",
-  "url": "",
+  "url": "https://github.com/doolean/DooGuard-Mod",
   "updateUrl": "",
-  "authorList": ["ExampleDude"],
-  "credits": "The Forge and FML guys, for making this example",
+  "authorList": ["doolean"],
+  "credits": "",
   "logoFile": "",
   "screenshots": [],
   "dependencies": []

@@ -113,13 +113,12 @@ public class FlagUtils {
     public static List<Flag> filterFlagsByCategory(List<Flag> flags, String category) {
         List<Flag> filteredFlags = new ArrayList<>();
 
-        // Проходим по всем флагам в списке
         for (Flag flag : flags) {
             if (flag.getCategory().equals(category)) {
-                filteredFlags.add(flag); // Добавляем флаг в результат, если категория совпадает
+                filteredFlags.add(flag);
             }
         }
 
-        return filteredFlags; // Возвращаем отфильтрованный список флагов
+        return filteredFlags;
     }
 }
